@@ -218,7 +218,7 @@ Set-Location "<本包目录>"
 - 附件**只列元信息**，不做附件下载/发送（PLAN D6）；
 - 不做 HTML 邮件渲染（HTML 只转纯文本）；
 - 不做多账号、日历、联系人（PLAN 第 14 节）；
-- 装入 Coopanion 后的 **World 页与 7 工具实测**由 Lead 在报告后执行（4.2），本清单只给判定口径。
+- 装入 Coopanion 后的 **World 页与 7 工具实测**已由 Lead 完成，见第四节末「Lead 实测记录（2026-11-12）」。
 
 ## 九、接真邮箱时怎么自验（下一版，不属于本版验收）
 
@@ -231,6 +231,28 @@ Set-Location "<本包目录>"
 - [ ] `mail_send` 先不带 `confirm` 看草稿，带 `confirm: true` 发一封**给自己**；
 - [ ] 失败时按 5 类分类处理（README「排错」）；
 - [ ] 测完把 `mode` 改回 `demo`（或至少把 `authCode` 清空），避免误发。
+
+## 十、npm 发布与安装验证（0.1.x）
+
+- [x] **10.1 发布成功。**
+  - 仓库：<https://github.com/Alice-Marx/cortico-world-mail>（tag `v0.1.0` / `v0.1.1`）；
+  - npm：`cortico-world-mail`，`https://www.npmjs.com/package/cortico-world-mail`，
+    registry `https://registry.npmjs.org/`；发布账号 `ljwei-stak`（`npm whoami` 实测）。
+  - 实测：`npm publish --access public` 返回 `+ cortico-world-mail@0.1.x`。新包首次发布时 registry 会先出现
+    `0.0.0-stage` 占位（npm 的异步发布处理），约 1 分钟内 `dist-tags.latest` 指向真实版本。
+
+- [x] **10.2 tarball 内容干净。**
+  - `npm pack --dry-run --json`：**31 个文件**（`src/ assets/ scripts/ docs/ describe.json README LICENSE NOTICE package.json`），
+    无 `node_modules/`、无 `tests/`、无 `PLAN.md`（内部计划）、无 `.env`/运行期产物/真实凭据。
+
+- [x] **10.3 消费者安装与加载。**
+  - 在空目录 `npm install cortico-world-mail@0.1.x` 后：
+    - 安装 31 个文件；`describe.json` 与 `src/ENV_PROMPT.md` 在位；
+    - `npm` 上装进 `node_modules` 后，裸 Node 受 `ERR_UNSUPPORTED_NODE_MODULES_TYPE_STRIPPING` 限制
+      （Node 既定行为，不是包的问题）；用 Cortico 框架同款 tsx 加载器实测
+      `node --import <tsx>/dist/loader.mjs -e "import('cortico-world-mail')"` → **TSX LOAD OK**（id=mail、7 工具、4 事件）。
+  - 包内 `scripts/selfcheck.mjs` 在 `node_modules` 场景会自动复制到临时目录后完整重跑，**PASS 8/8**
+    （源码目录直接跑同样 PASS 8/8）。
 
 ## 附录：给 Lead 的占位符
 

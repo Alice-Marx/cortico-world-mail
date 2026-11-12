@@ -69,7 +69,8 @@ const EVENT_TYPES = ['mail.down', 'mail.new', 'mail.ready', 'mail.scanned'];
 
 test('package.json：入口、关键词、cortico 块', () => {
   assert.equal(pkg.name, 'cortico-world-mail');
-  assert.equal(pkg.version, '0.1.0');
+  // 版本号随发布递增，测试只钉格式（x.y.z）与存在性，不钉具体数字，免得每次发版都要改测试。
+  assert.match(String(pkg.version), /^\d+\.\d+\.\d+$/, 'version 必须是 x.y.z');
   assert.equal(pkg.type, 'module', 'CJS 会让扩展与框架各持一份模块实例（manifest.ts:6）');
   assert.equal(pkg.main, './src/index.ts', '源码直跑');
   assert.equal(pkg.exports['.'], './src/index.ts', '入口解析 exports→module→main（extensions.ts:119-130）');

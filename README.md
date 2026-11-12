@@ -30,7 +30,8 @@
 
 ## 安装
 
-装进 `<Coopanion 部署根>\data\extensions`。**装本地源码目录 = link（软链），不发布 npm。**
+装进 `<Coopanion 部署根>\data\extensions`。两种来源都支持：**npm 已发布**（包名 `cortico-world-mail`；
+<https://www.npmjs.com/package/cortico-world-mail>），也可以装本地源码目录（link 软链，改源码重启生效）。
 
 先认两个路径（下面命令里的占位符都按你自己的机器替换）：
 
@@ -41,7 +42,18 @@
 
 > 装在非默认盘（例如 D:）时，常见位置探测不到，安装脚本会提示用 `--data` 指定。
 
-### 方式一（推荐）：安装脚本 `scripts/install.mjs`
+### 方式零：npm（已发布，最省事）
+
+```powershell
+Set-Location "<Coopanion 部署根>\data\extensions"
+corepack pnpm add cortico-world-mail
+```
+
+然后在控制台 World 页把「邮箱」的开关打开（或把 `worlds.mail.enabled` 改成 `true`），重启 Coopanion。
+也可以用控制台「扩展」页直接按包名 `cortico-world-mail` 装（走 npm，和上面等价）。
+npm 上装的是发布快照；改源码/开发调试请用下面的方式一或方式二装本地目录。
+
+### 方式一（推荐，本地开发）：安装脚本 `scripts/install.mjs`
 
 零依赖、普通 node 就能跑。它依次：探测部署根 → 预检本包形状 → 把本包放进
 `<部署根>\data\extensions\node_modules\cortico-world-mail`（默认 Windows junction 软链）→ 在扩展的

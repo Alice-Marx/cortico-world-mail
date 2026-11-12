@@ -1,6 +1,6 @@
 {
   "name": "cortico-world-mail",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Cortico World：邮箱 —— 用 QQ 邮箱的 IMAP/SMTP 读写邮件，读到的邮件落进本地知识库、新邮件摘要进对话；默认 demo 模式内置演示邮箱，不填任何凭据也能装、能看、能发；零第三方依赖。",
   "type": "module",
   "license": "MIT",

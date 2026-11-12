@@ -20,7 +20,7 @@
  *   node scripts/selfcheck.mjs --verbose   # 成功项也打印证据细节
  */
 import { spawnSync } from 'node:child_process';
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync } from 'node:fs';
+import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, extname, join, resolve, relative } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
@@ -565,14 +565,38 @@ function checkCredentials() {
 function checkImport() {
   const code = "import('./src/index.ts')";
   const timeoutMs = 15000;
-  const run = spawnSync(process.execPath, ['-e', code], {
-    // 必须在包根跑：relative 的 './src/index.ts' 与裸 Node 的类型剥离都按 cwd 解析。
-    cwd: PKG_DIR,
-    encoding: 'utf8',
-    timeout: timeoutMs,
-    windowsHide: true,
-    env: { ...process.env, NODE_OPTIONS: '' },
-  });
+  // 裸 Node 有一条既定限制：拒绝从 node_modules 里剥离 TS 类型
+  // （ERR_UNSUPPORTED_NODE_MODULES_TYPE_STRIPPING）。包被 npm 装进别人的 node_modules 后，
+  // 这条检查要在临时副本上跑同一份发布内容；Cortico 运行时用 tsx 加载，不受这条限制影响。
+  const inNodeModules = PKG_DIR.split(/[\\/]/).includes('node_modules');
+  let cwd = PKG_DIR;
+  let temp = '';
+  let note = '';
+  if (inNodeModules) {
+    temp = mkdtempSync(join(tmpdir(), 'cortico-world-mail-selfcheck-'));
+    const strip = JSON.parse(readFileSync(join(PKG_DIR, 'package.json'), 'utf8'));
+    const entries = ['package.json', ...(Array.isArray(strip.files) ? strip.files : [])];
+    for (const entry of entries) {
+      const from = join(PKG_DIR, entry);
+      if (!existsSync(from)) continue;
+      cpSync(from, join(temp, entry), { recursive: true, force: true });
+    }
+    cwd = temp;
+    note = '（包在 node_modules 里：在临时副本上验证同一份发布内容；裸 Node 不允许从 node_modules 剥离 TS 类型，Cortico 用 tsx 加载不受影响）';
+  }
+  let run;
+  try {
+    run = spawnSync(process.execPath, ['-e', code], {
+      // 必须在包根跑：relative 的 './src/index.ts' 与裸 Node 的类型剥离都按 cwd 解析。
+      cwd,
+      encoding: 'utf8',
+      timeout: timeoutMs,
+      windowsHide: true,
+      env: { ...process.env, NODE_OPTIONS: '' },
+    });
+  } finally {
+    if (temp !== '') rmSync(temp, { recursive: true, force: true });
+  }
   const stderr = String(run.stderr || '').trim();
   const tail = stderr === '' ? '' : stderr.split(/\r?\n/).slice(-8).join(' ⏎ ');
   if (run.error && run.error.code === 'ETIMEDOUT') {
@@ -585,12 +609,46 @@ function checkImport() {
       'node -e "' + code + '" 退出码 ' + String(run.status) + (tail ? '；stderr 尾部：' + clip(tail, 600) : '（stderr 为空）'),
     );
   }
-  return record('import', true, 'node -e "' + code + '" 退出码 0（包根 cwd，' + timeoutMs / 1000 + 's 超时，裸 Node ' + process.version + '，无框架依赖）');
+  return record(
+    'import',
+    true,
+    'node -e "' + code + '" 退出码 0（包根 cwd，' + timeoutMs / 1000 + 's 超时，裸 Node ' + process.version + '，无框架依赖）' + note,
+  );
 }
 
 // ── 主流程 ─────────────────────────────────────────────────────────────────
 
+/** 发布内容拷到临时目录（用于 node_modules 场景），返回临时目录路径。 */
+function relocateForSelfcheck() {
+  const temp = mkdtempSync(join(tmpdir(), 'cortico-world-mail-selfcheck-'));
+  const strip = JSON.parse(readFileSync(join(PKG_DIR, 'package.json'), 'utf8'));
+  const entries = ['package.json', ...(Array.isArray(strip.files) ? strip.files : [])];
+  for (const entry of entries) {
+    const from = join(PKG_DIR, entry);
+    if (!existsSync(from)) continue;
+    cpSync(from, join(temp, entry), { recursive: true, force: true });
+  }
+  return temp;
+}
+
 async function main() {
+  // 裸 Node 拒绝从 node_modules 里剥离 TS 类型（ERR_UNSUPPORTED_NODE_MODULES_TYPE_STRIPPING），
+  // 而 selfcheck 自身要在进程内 import 源码。包被 npm 装进别人的 node_modules 时，
+  // 先把自己复制到临时目录，再在副本里完整跑一遍同一套检查（检查结果同样有效）。
+  const inNodeModules = PKG_DIR.split(/[\\/]/).includes('node_modules');
+  if (inNodeModules && process.env.MAIL_SELFCHECK_RELOCATED !== '1') {
+    const temp = relocateForSelfcheck();
+    process.stdout.write('（包在 node_modules 里：复制到临时副本后完整重跑一次；裸 Node 的这个限制不影响 Cortico 的 tsx 加载）\n');
+    const run = spawnSync(process.execPath, [join(temp, 'scripts', 'selfcheck.mjs')], {
+      cwd: temp,
+      stdio: 'inherit',
+      windowsHide: true,
+      env: { ...process.env, MAIL_SELFCHECK_RELOCATED: '1', NODE_OPTIONS: '' },
+    });
+    rmSync(temp, { recursive: true, force: true });
+    process.exit(run.status === null ? 1 : run.status);
+  }
+
   process.stdout.write('cortico-world-mail selfcheck · ' + PKG_DIR + '\n');
 
   checkManifest();
