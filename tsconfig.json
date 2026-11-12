@@ -1,0 +1,23 @@
+// 仅供 IDE / tsc --noEmit 使用。包本身源码直跑：框架在 Core 子进程里载入 src/index.ts，
+// 本机没有类型检查工具链，验收只看 node --test。
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022"],
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "allowImportingTsExtensions": true,
+    "resolveJsonModule": true,
+    "noEmit": true,
+    "strict": true,
+    "noUncheckedIndexedAccess": false,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "types": ["node"],
+    // "paths" 只影响 IDE 跳转，不影响运行：运行时由宿主框架的 src/extensions/runtime.ts
+    // 模块钩子把 cortico/<path> 映到它自己的 src/<path>，与本文件无关。
+    // 要在 IDE 里跳进框架源码，自己加 "paths": { "cortico/*": ["<Coopanion 安装目录>/resources/app/build/cortico/src/*"] }。
+    "paths": {}
+  },
+  "include": ["src/**/*.ts", "tests/**/*.ts"]
+}

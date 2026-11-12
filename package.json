@@ -1,0 +1,68 @@
+{
+  "name": "cortico-world-mail",
+  "version": "0.1.0",
+  "description": "Cortico World：邮箱 —— 用 QQ 邮箱的 IMAP/SMTP 读写邮件，读到的邮件落进本地知识库、新邮件摘要进对话；默认 demo 模式内置演示邮箱，不填任何凭据也能装、能看、能发；零第三方依赖。",
+  "type": "module",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Alice-Marx/cortico-world-mail.git"
+  },
+  "homepage": "https://github.com/Alice-Marx/cortico-world-mail#readme",
+  "bugs": {
+    "url": "https://github.com/Alice-Marx/cortico-world-mail/issues"
+  },
+  "keywords": [
+    "cortico-world",
+    "cortico",
+    "coopanion",
+    "mail",
+    "email",
+    "imap",
+    "smtp",
+    "qq-mail",
+    "knowledge-base"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "main": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "cortico": {
+    "kind": "world",
+    "api": 6,
+    "displayName": "邮箱",
+    "icon": "assets/icon.svg",
+    "describe": "describe.json",
+    "tags": [
+      "internet",
+      "sensitive-data"
+    ],
+    "locales": {
+      "zh": {
+        "displayName": "邮箱",
+        "description": "她能读写你的邮箱：列邮件、读正文、搜索、发信、回信。读到的邮件落进本地知识库（Markdown + JSONL，人读可审计），新邮件摘要进对话。默认 demo 模式内置演示邮箱，不联网、不需要任何凭据；live 模式用你自己填的 QQ 邮箱授权码连接，发信必须经你确认。"
+      },
+      "en": {
+        "displayName": "Mailbox",
+        "description": "She reads and writes your mailbox: listing, reading, searching, sending and replying to mail. What she reads lands in a local knowledge base (Markdown + JSONL, auditable by a human), and new-mail digests go into the conversation. The default demo mode ships a built-in demo mailbox that never goes online and needs no credentials; live mode signs in to QQ Mail with the authorization code you provide, and sending always requires your confirmation."
+      }
+    }
+  },
+  "files": [
+    "src/",
+    "assets/",
+    "scripts/",
+    "docs/",
+    "describe.json",
+    "README.md",
+    "LICENSE",
+    "NOTICE"
+  ],
+  "scripts": {
+    "test": "node --test"
+  },
+  "dependencies": {}
+}

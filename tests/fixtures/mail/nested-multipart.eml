@@ -1,0 +1,29 @@
+From: wang.wu@example.org
+To: zhang.san@example.com
+Subject: =?UTF-8?B?5bWM5aWX5oql5paH?=
+Date: Mon, 09 Nov 2026 15:20:00 +0800
+Message-ID: <nested-004@example.org>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="outer-3"
+
+--outer-3
+Content-Type: multipart/alternative; boundary="inner-3"
+
+--inner-3
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: base64
+
+5bWM5aWX6YeM55qE57qv5paH5pys
+--inner-3
+Content-Type: text/html; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+<html><body><p>嵌套里的 HTML</p></body></html>
+--inner-3--
+--outer-3
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: attachment; filename="notes.txt"
+Content-Transfer-Encoding: 8bit
+
+附注文本
+--outer-3--
